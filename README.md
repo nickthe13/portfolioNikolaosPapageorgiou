@@ -1,6 +1,6 @@
 Building My Portfolio with Angular and Signals
 
-As a developer passionate about modular architecture and performance optimization, I recently built my personal portfolio using Angular — not just as a showcase, but as a playground for modern frontend techniques.
+As a developer, i am passionate about modular architecture and performance optimization, I recently built my personal portfolio using Angular — not just as a showcase, but as a playground for modern frontend techniques.
 
  Why Angular?
  
