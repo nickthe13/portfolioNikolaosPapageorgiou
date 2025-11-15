@@ -1,1 +1,58 @@
-<p>header works!</p>
+<header class="header">
+  <div class="container">
+    <div class="logo">
+      <a routerLink="/home" class="logo-link">
+        <span class="logo-text">Nikolaos</span>
+        <span class="logo-accent">Papageorgiou</span>
+      </a>
+    </div>
+
+    <nav class="nav" [class.nav-open]="isMenuOpen()">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">
+            Home
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/about" routerLinkActive="active" class="nav-link">
+            About
+          </a>
+        </li>
+        <li class="nav-item nav-item-dropdown">
+          <button class="nav-link nav-dropdown-trigger" (click)="toggleProjectsDropdown()">
+            Projects
+            <svg class="dropdown-icon" [class.rotate]="isProjectsOpen()" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M4.427 6.427a.6.6 0 0 1 .848 0L8 9.151l2.725-2.724a.6.6 0 1 1 .848.848l-3.149 3.15a.6.6 0 0 1-.848 0l-3.15-3.15a.6.6 0 0 1 0-.848Z"/>
+            </svg>
+          </button>
+          <ul class="dropdown-menu" [class.show]="isProjectsOpen()">
+            <li>
+              <a routerLink="/projects/todo-app" routerLinkActive="active" class="dropdown-link" (click)="closeMenus()">
+                Todo App
+              </a>
+            </li>
+            <li>
+              <a routerLink="/projects/music-moodboard" routerLinkActive="active" class="dropdown-link" (click)="closeMenus()">
+                Music Moodboard
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a href="#contact" class="nav-link nav-link-cta">
+            Contact
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <button class="menu-toggle" (click)="toggleMenu()" [attr.aria-expanded]="isMenuOpen()" aria-label="Toggle navigation menu">
+      <span class="menu-icon" [class.open]="isMenuOpen()">
+        <span></span>
+        <span></span>
+        <span></span>
+      </span>
+    </button>
+  </div>
+</header>
