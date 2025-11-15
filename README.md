@@ -1,59 +1,12 @@
-# PortfolioNikolaosPapageorgiou
+Building My Portfolio with Angular and Signals
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.9.
+As a developer passionate about modular architecture and performance optimization, I recently built my personal portfolio using Angular — not just as a showcase, but as a playground for modern frontend techniques.
 
-## Development server
+ Why Angular?
+ 
+Angular’s powerful CLI, built-in routing, and component-based structure make it ideal for scalable projects. I used standalone components, lazy-loaded modules, and global SCSS management to keep the codebase clean and maintainable.
 
-To start a local development server, run:
+Signals for Reactive State
 
-```bash
-ng serve
-```
+One highlight is my use of Angular Signals for reactive state management. Instead of relying on traditional @Input() and @Output(), I used signal() to manage UI state like menu toggles and theme switching. This approach improves performance and simplifies change detection with OnPush.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
