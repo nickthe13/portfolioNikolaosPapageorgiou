@@ -36,6 +36,9 @@ interface MoodOption {
 export class MusicMoodboard {
   private readonly STORAGE_KEY = 'music-moodboard-songs';
 
+  // External project link
+  protected readonly externalLink = 'https://github.com/nickthe13/portfolioNikolaosPapageorgiou';
+
   // State signals
   protected readonly songs = signal<Song[]>(this.loadSongsFromStorage());
   protected readonly newSongTitle = signal('');

@@ -57,6 +57,42 @@
   font-weight: 500;
 }
 
+.project-actions {
+  margin-top: 2rem;
+}
+
+.btn-external {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.75rem;
+  background: white;
+  color: #1f2937;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.95);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  span {
+    @media (max-width: 480px) {
+      display: none;
+    }
+  }
+}
+
 // Moodboard Interface
 .moodboard-interface {
   padding: 4rem 0;
