@@ -75,10 +75,10 @@ export class Home {
     {
       id: 'music-moodboard',
       title: 'Music Moodboard',
-      description: 'Interactive music discovery platform with mood-based recommendations and playlist creation.',
-      tags: ['Angular', 'RxJS', 'API Integration'],
+      description: 'A colorful music organizer with mood-based categorization and seamless todo integration. Save songs by mood and send them to your todo list.',
+      tags: ['Angular', 'Signals', 'Cross-Component Integration'],
       link: '/projects/music-moodboard',
-      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+      gradient: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)'
     }
   ]);
 }
