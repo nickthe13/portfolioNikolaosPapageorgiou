@@ -61,9 +61,29 @@
 .moodboard-interface {
   padding: 4rem 0;
   background: #f9fafb;
+  position: relative;
+  transition: background-color 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // Dynamic mood-based background with overlay
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse at center, var(--current-mood-color, transparent) 0%, transparent 70%);
+    opacity: 0.15;
+    transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+  }
 
   @media (prefers-color-scheme: dark) {
     background: #111827;
+
+    &::before {
+      opacity: 0.25;
+    }
   }
 }
 
@@ -72,6 +92,8 @@
   border-radius: 1rem;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  position: relative;
+  z-index: 1;
 
   @media (prefers-color-scheme: dark) {
     background: #1f2937;
@@ -89,14 +111,86 @@
   }
 }
 
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
 .section-heading {
   font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin: 0;
   color: #1f2937;
 
   @media (prefers-color-scheme: dark) {
     color: #f9fafb;
+  }
+}
+
+.audio-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  border-radius: 2rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+
+  @media (prefers-color-scheme: dark) {
+    background: rgba(255, 255, 255, 0.05);
+    color: #9ca3af;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.1);
+    transform: scale(1.05);
+
+    @media (prefers-color-scheme: dark) {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  &.playing {
+    background: linear-gradient(135deg, var(--current-mood-color, #ec4899) 0%, rgba(236, 72, 153, 0.7) 100%);
+    color: white;
+    animation: pulse-audio 1.5s ease-in-out infinite;
+
+    &:hover {
+      background: linear-gradient(135deg, var(--current-mood-color, #ec4899) 0%, rgba(236, 72, 153, 0.9) 100%);
+    }
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  span {
+    @media (max-width: 480px) {
+      display: none;
+    }
+  }
+}
+
+@keyframes pulse-audio {
+  0%, 100% {
+    box-shadow: 0 0 0 0 var(--current-mood-color, rgba(236, 72, 153, 0.4));
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(236, 72, 153, 0);
   }
 }
 
@@ -154,28 +248,76 @@
   border: 2px solid #e5e7eb;
   border-radius: 0.75rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: inherit;
+  position: relative;
+  overflow: hidden;
 
   @media (prefers-color-scheme: dark) {
     background: #374151;
     border-color: #4b5563;
   }
 
+  // Ripple effect on click
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: var(--mood-color);
+    opacity: 0.3;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  &:active::before {
+    width: 200%;
+    height: 200%;
+  }
+
   &:hover {
     border-color: var(--mood-color);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   }
 
   &.active {
     background: var(--mood-color);
     border-color: var(--mood-color);
     color: white;
+    animation: pulse-mood 2s ease-in-out infinite;
+    box-shadow: 0 0 20px var(--mood-color);
 
     .mood-label {
       color: white;
     }
+
+    .mood-icon {
+      animation: bounce-icon 1s ease-in-out infinite;
+    }
+  }
+}
+
+// Pulse animation for active mood button
+@keyframes pulse-mood {
+  0%, 100% {
+    box-shadow: 0 0 20px var(--mood-color);
+  }
+  50% {
+    box-shadow: 0 0 30px var(--mood-color), 0 0 40px var(--mood-color);
+  }
+}
+
+// Bounce animation for mood icon
+@keyframes bounce-icon {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.1);
   }
 }
 

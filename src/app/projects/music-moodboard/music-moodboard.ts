@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TodoIntegrationService } from '../../services/todo-integration.service';
+import { MoodAudioService } from '../../services/mood-audio.service';
 
 interface Song {
   id: string;
@@ -41,6 +42,7 @@ export class MusicMoodboard {
   protected readonly newSongArtist = signal('');
   protected readonly selectedMood = signal<Mood>('happy');
   protected readonly currentFilter = signal<Mood | 'all'>('all');
+  protected readonly backgroundMood = signal<Mood>('happy'); // For dynamic background color
 
   // Mood options
   protected readonly moodOptions = signal<MoodOption[]>([
@@ -102,7 +104,16 @@ export class MusicMoodboard {
     }
   ]);
 
-  constructor(private todoIntegration: TodoIntegrationService) {}
+  constructor(
+    private todoIntegration: TodoIntegrationService,
+    protected moodAudio: MoodAudioService
+  ) {
+    // Update background color when mood changes
+    effect(() => {
+      const mood = this.backgroundMood();
+      this.updateBackgroundColor(mood);
+    });
+  }
 
   /**
    * Load songs from localStorage
@@ -140,10 +151,37 @@ export class MusicMoodboard {
   }
 
   /**
-   * Set the selected mood
+   * Set the selected mood and trigger audio/visual effects
    */
   protected setSelectedMood(mood: Mood): void {
     this.selectedMood.set(mood);
+    this.backgroundMood.set(mood);
+
+    // Play mood-based ambient sound
+    this.moodAudio.playMoodSound(mood);
+  }
+
+  /**
+   * Update background color with smooth transition
+   */
+  private updateBackgroundColor(mood: Mood): void {
+    const moodOption = this.moodOptions().find(m => m.value === mood);
+    if (moodOption) {
+      // Update CSS custom property for background color
+      document.documentElement.style.setProperty('--current-mood-color', moodOption.color);
+    }
+  }
+
+  /**
+   * Toggle audio on/off
+   */
+  protected toggleAudio(): void {
+    if (this.moodAudio.isPlaying()) {
+      this.moodAudio.stopSound();
+    } else {
+      // Play the currently selected mood
+      this.moodAudio.playMoodSound(this.selectedMood());
+    }
   }
 
   /**
