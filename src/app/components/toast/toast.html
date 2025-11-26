@@ -1,0 +1,26 @@
+<div class="toast-container">
+  @for (toast of toasts(); track toast.id) {
+    <div
+      class="toast toast-{{ toast.type }}"
+      @toastAnimation
+      role="alert"
+      [attr.aria-live]="toast.type === 'error' ? 'assertive' : 'polite'"
+    >
+      <div class="toast-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path [attr.d]="getIcon(toast.type)"/>
+        </svg>
+      </div>
+      <div class="toast-message">{{ toast.message }}</div>
+      <button
+        class="toast-close"
+        (click)="removeToast(toast.id)"
+        aria-label="Close notification"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+        </svg>
+      </button>
+    </div>
+  }
+</div>

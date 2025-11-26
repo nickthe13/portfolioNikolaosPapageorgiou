@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, effect, signal } from '@a
 import { RouterLink } from '@angular/router';
 import { TodoIntegrationService } from '../../services/todo-integration.service';
 import { MoodAudioService } from '../../services/mood-audio.service';
+import { ToastService } from '../../services/toast.service';
 
 interface Song {
   id: string;
@@ -47,14 +48,14 @@ export class MusicMoodboard {
   protected readonly currentFilter = signal<Mood | 'all'>('all');
   protected readonly backgroundMood = signal<Mood>('happy'); // For dynamic background color
 
-  // Mood options
+  // Mood options with vibrant, distinct colors
   protected readonly moodOptions = signal<MoodOption[]>([
-    { value: 'happy', label: 'Happy', color: '#f59e0b', icon: '😊' },
-    { value: 'sad', label: 'Sad', color: '#6366f1', icon: '😢' },
-    { value: 'energetic', label: 'Energetic', color: '#ef4444', icon: '⚡' },
-    { value: 'calm', label: 'Calm', color: '#10b981', icon: '🌊' },
-    { value: 'focused', label: 'Focused', color: '#8b5cf6', icon: '🎯' },
-    { value: 'romantic', label: 'Romantic', color: '#ec4899', icon: '💕' }
+    { value: 'happy', label: 'Happy', color: '#fbbf24', icon: '😊' }, // Bright golden yellow
+    { value: 'sad', label: 'Sad', color: '#3b82f6', icon: '😢' }, // Deep blue
+    { value: 'energetic', label: 'Energetic', color: '#ef4444', icon: '⚡' }, // Vivid red
+    { value: 'calm', label: 'Calm', color: '#10b981', icon: '🌊' }, // Ocean green
+    { value: 'focused', label: 'Focused', color: '#8b5cf6', icon: '🎯' }, // Deep purple
+    { value: 'romantic', label: 'Romantic', color: '#ec4899', icon: '💕' } // Hot pink
   ]);
 
   // Computed signals
@@ -109,7 +110,8 @@ export class MusicMoodboard {
 
   constructor(
     private todoIntegration: TodoIntegrationService,
-    protected moodAudio: MoodAudioService
+    protected moodAudio: MoodAudioService,
+    private toastService: ToastService
   ) {
     // Update background color when mood changes
     effect(() => {
@@ -165,13 +167,22 @@ export class MusicMoodboard {
   }
 
   /**
-   * Update background color with smooth transition
+   * Update background color with smooth transition and visual feedback
    */
   private updateBackgroundColor(mood: Mood): void {
     const moodOption = this.moodOptions().find(m => m.value === mood);
     if (moodOption) {
       // Update CSS custom property for background color
       document.documentElement.style.setProperty('--current-mood-color', moodOption.color);
+
+      // Add a temporary brightness boost for visual feedback when mood changes
+      const root = document.documentElement;
+      root.style.setProperty('--mood-transition-active', '1');
+
+      // Remove the boost after animation
+      setTimeout(() => {
+        root.style.setProperty('--mood-transition-active', '0');
+      }, 600);
     }
   }
 
@@ -211,6 +222,9 @@ export class MusicMoodboard {
     this.songs.update(songs => [...songs, newSong]);
     this.saveSongsToStorage();
 
+    // Show success notification
+    this.toastService.success(`${moodOption.icon} "${title}" added to ${moodOption.label} mood!`);
+
     // Reset form
     this.newSongTitle.set('');
     this.newSongArtist.set('');
@@ -244,6 +258,9 @@ export class MusicMoodboard {
         mood: song.mood
       }
     });
+
+    // Show success notification
+    this.toastService.success(`"${song.title}" added to Todo List ✓`);
   }
 
   /**
