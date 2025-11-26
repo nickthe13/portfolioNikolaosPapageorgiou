@@ -4,15 +4,14 @@ type Mood = 'happy' | 'sad' | 'energetic' | 'calm' | 'focused' | 'romantic';
 
 /**
  * Service for managing mood-based background audio
- * Uses Web Audio API for ambient sound generation
+ * Plays MP3 audio files for each mood
  */
 @Injectable({
   providedIn: 'root'
 })
 export class MoodAudioService {
-  private audioContext: AudioContext | null = null;
-  private currentOscillator: OscillatorNode | null = null;
-  private currentGain: GainNode | null = null;
+  private currentAudio: HTMLAudioElement | null = null;
+  private fadeOutInterval: number | null = null;
 
   /**
    * Signal to track if audio is currently playing
@@ -25,69 +24,43 @@ export class MoodAudioService {
   readonly currentMood = signal<Mood | null>(null);
 
   /**
-   * Mood-specific frequencies and characteristics
+   * Map moods to their audio file paths
    */
-  private readonly moodConfig: Record<Mood, { frequency: number; type: OscillatorType; volume: number }> = {
-    happy: { frequency: 523.25, type: 'sine', volume: 0.1 }, // C5 - bright and cheerful
-    sad: { frequency: 220, type: 'sine', volume: 0.08 }, // A3 - melancholic
-    energetic: { frequency: 659.25, type: 'square', volume: 0.12 }, // E5 - energetic
-    calm: { frequency: 174.61, type: 'sine', volume: 0.06 }, // F3 - very calming
-    focused: { frequency: 440, type: 'triangle', volume: 0.07 }, // A4 - focused attention
-    romantic: { frequency: 293.66, type: 'sine', volume: 0.09 } // D4 - warm and romantic
+  private readonly moodAudioFiles: Record<Mood, string> = {
+    happy: 'audio/happy.mp3',
+    sad: 'audio/sad.mp3',
+    energetic: 'audio/energetic.mp3',
+    calm: 'audio/calm.mp3',
+    focused: 'audio/focused.mp3',
+    romantic: 'audio/romantic.mp3'
   };
-
-  /**
-   * Initialize or get the AudioContext
-   */
-  private getAudioContext(): AudioContext {
-    if (!this.audioContext) {
-      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    return this.audioContext;
-  }
 
   /**
    * Play mood-based ambient sound
    */
   playMoodSound(mood: Mood): void {
-    // Stop any currently playing sound
-    this.stopSound();
+    // Stop any currently playing sound immediately
+    this.stopSoundImmediate();
 
     try {
-      const context = this.getAudioContext();
-      const config = this.moodConfig[mood];
+      const audioPath = this.moodAudioFiles[mood];
 
-      // Create oscillator for the base tone
-      const oscillator = context.createOscillator();
-      oscillator.type = config.type;
-      oscillator.frequency.setValueAtTime(config.frequency, context.currentTime);
+      // Create new audio element
+      const audio = new Audio(audioPath);
+      audio.loop = true; // Loop the audio
+      audio.volume = 0; // Start at 0 for fade in
 
-      // Create gain node for volume control
-      const gainNode = context.createGain();
-      gainNode.gain.setValueAtTime(0, context.currentTime);
-      gainNode.gain.linearRampToValueAtTime(config.volume, context.currentTime + 0.5); // Fade in
+      // Start playing immediately
+      audio.play().then(() => {
+        this.fadeIn(audio, 0.3, 1000); // Fade to 30% volume over 1 second
+      }).catch(error => {
+        console.error('Error playing audio:', error);
+      });
 
-      // Connect the nodes
-      oscillator.connect(gainNode);
-      gainNode.connect(context.destination);
-
-      // Start the oscillator
-      oscillator.start();
-
-      // Store references
-      this.currentOscillator = oscillator;
-      this.currentGain = gainNode;
+      // Store reference
+      this.currentAudio = audio;
       this.isPlaying.set(true);
       this.currentMood.set(mood);
-
-      // Add subtle vibrato for more natural sound
-      const lfo = context.createOscillator();
-      const lfoGain = context.createGain();
-      lfo.frequency.value = 5; // 5 Hz vibrato
-      lfoGain.gain.value = 10; // Slight pitch variation
-      lfo.connect(lfoGain);
-      lfoGain.connect(oscillator.frequency);
-      lfo.start();
 
     } catch (error) {
       console.error('Error playing mood sound:', error);
@@ -95,29 +68,84 @@ export class MoodAudioService {
   }
 
   /**
-   * Stop the currently playing sound
+   * Fade in audio volume
+   */
+  private fadeIn(audio: HTMLAudioElement, targetVolume: number, duration: number): void {
+    const steps = 20;
+    const stepDuration = duration / steps;
+    const volumeIncrement = targetVolume / steps;
+    let currentStep = 0;
+
+    const fadeInterval = setInterval(() => {
+      if (currentStep >= steps || !this.currentAudio) {
+        clearInterval(fadeInterval);
+        if (audio) {
+          audio.volume = targetVolume;
+        }
+        return;
+      }
+
+      currentStep++;
+      audio.volume = Math.min(volumeIncrement * currentStep, targetVolume);
+    }, stepDuration);
+  }
+
+  /**
+   * Fade out audio volume
+   */
+  private fadeOut(audio: HTMLAudioElement, duration: number): void {
+    const steps = 20;
+    const stepDuration = duration / steps;
+    const startVolume = audio.volume;
+    const volumeDecrement = startVolume / steps;
+    let currentStep = 0;
+
+    // Clear any existing fade out
+    if (this.fadeOutInterval) {
+      clearInterval(this.fadeOutInterval);
+    }
+
+    this.fadeOutInterval = setInterval(() => {
+      if (currentStep >= steps) {
+        clearInterval(this.fadeOutInterval!);
+        this.fadeOutInterval = null;
+        audio.pause();
+        audio.currentTime = 0;
+        return;
+      }
+
+      currentStep++;
+      audio.volume = Math.max(startVolume - (volumeDecrement * currentStep), 0);
+    }, stepDuration) as unknown as number;
+  }
+
+  /**
+   * Stop the currently playing sound immediately (for quick switching)
+   */
+  private stopSoundImmediate(): void {
+    if (this.fadeOutInterval) {
+      clearInterval(this.fadeOutInterval);
+      this.fadeOutInterval = null;
+    }
+
+    if (this.currentAudio) {
+      try {
+        this.currentAudio.pause();
+        this.currentAudio.currentTime = 0;
+        this.currentAudio = null;
+      } catch (error) {
+        console.error('Error stopping sound:', error);
+      }
+    }
+  }
+
+  /**
+   * Stop the currently playing sound with fade out
    */
   stopSound(): void {
-    if (this.currentOscillator && this.currentGain) {
+    if (this.currentAudio) {
       try {
-        const context = this.getAudioContext();
-
-        // Fade out
-        this.currentGain.gain.linearRampToValueAtTime(0, context.currentTime + 0.3);
-
-        // Stop after fade out
-        setTimeout(() => {
-          if (this.currentOscillator) {
-            this.currentOscillator.stop();
-            this.currentOscillator.disconnect();
-            this.currentOscillator = null;
-          }
-          if (this.currentGain) {
-            this.currentGain.disconnect();
-            this.currentGain = null;
-          }
-        }, 300);
-
+        this.fadeOut(this.currentAudio, 500);
         this.isPlaying.set(false);
         this.currentMood.set(null);
       } catch (error) {
@@ -142,9 +170,5 @@ export class MoodAudioService {
    */
   cleanup(): void {
     this.stopSound();
-    if (this.audioContext) {
-      this.audioContext.close();
-      this.audioContext = null;
-    }
   }
 }

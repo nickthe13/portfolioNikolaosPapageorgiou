@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, signal, OnDestroy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TodoIntegrationService } from '../../services/todo-integration.service';
 import { MoodAudioService } from '../../services/mood-audio.service';
@@ -34,7 +34,7 @@ interface MoodOption {
   styleUrl: './music-moodboard.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MusicMoodboard {
+export class MusicMoodboard implements OnDestroy {
   private readonly STORAGE_KEY = 'music-moodboard-songs';
 
   // External project link
@@ -47,6 +47,8 @@ export class MusicMoodboard {
   protected readonly selectedMood = signal<Mood>('happy');
   protected readonly currentFilter = signal<Mood | 'all'>('all');
   protected readonly backgroundMood = signal<Mood>('happy'); // For dynamic background color
+  protected readonly searchQuery = signal('');
+  protected readonly sortBy = signal<'date-desc' | 'date-asc' | 'title-asc' | 'artist-asc'>('date-desc');
 
   // Mood options with vibrant, distinct colors
   protected readonly moodOptions = signal<MoodOption[]>([
@@ -61,13 +63,41 @@ export class MusicMoodboard {
   // Computed signals
   protected readonly filteredSongs = computed(() => {
     const filter = this.currentFilter();
-    const songs = this.songs();
+    const search = this.searchQuery().toLowerCase().trim();
+    const sort = this.sortBy();
+    let songs = this.songs();
 
-    if (filter === 'all') {
-      return songs;
+    // Apply mood filter
+    if (filter !== 'all') {
+      songs = songs.filter(song => song.mood === filter);
     }
 
-    return songs.filter(song => song.mood === filter);
+    // Apply search filter
+    if (search) {
+      songs = songs.filter(song =>
+        song.title.toLowerCase().includes(search) ||
+        song.artist.toLowerCase().includes(search)
+      );
+    }
+
+    // Apply sorting
+    const sorted = [...songs];
+    switch (sort) {
+      case 'date-desc':
+        sorted.sort((a, b) => b.createdAt - a.createdAt);
+        break;
+      case 'date-asc':
+        sorted.sort((a, b) => a.createdAt - b.createdAt);
+        break;
+      case 'title-asc':
+        sorted.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'artist-asc':
+        sorted.sort((a, b) => a.artist.localeCompare(b.artist));
+        break;
+    }
+
+    return sorted;
   });
 
   protected readonly moodCounts = computed(() => {
@@ -246,6 +276,29 @@ export class MusicMoodboard {
   }
 
   /**
+   * Update search query
+   */
+  protected updateSearchQuery(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.searchQuery.set(input.value);
+  }
+
+  /**
+   * Clear search query
+   */
+  protected clearSearch(): void {
+    this.searchQuery.set('');
+  }
+
+  /**
+   * Update sort option
+   */
+  protected updateSort(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.sortBy.set(select.value as 'date-desc' | 'date-asc' | 'title-asc' | 'artist-asc');
+  }
+
+  /**
    * Send song to todo list
    */
   protected sendToTodo(song: Song): void {
@@ -288,5 +341,13 @@ export class MusicMoodboard {
       day: 'numeric',
       year: 'numeric'
     });
+  }
+
+  /**
+   * Cleanup when component is destroyed
+   */
+  ngOnDestroy(): void {
+    // Stop any playing audio when leaving the page
+    this.moodAudio.stopSound();
   }
 }
