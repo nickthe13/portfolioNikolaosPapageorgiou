@@ -20,20 +20,38 @@
           </a>
         </li>
         <li class="nav-item nav-item-dropdown">
-          <button class="nav-link nav-dropdown-trigger" (click)="toggleProjectsDropdown()">
+          <button
+            class="nav-link nav-dropdown-trigger"
+            (click)="toggleProjectsDropdown()"
+            [attr.aria-expanded]="isProjectsOpen()"
+            aria-haspopup="true"
+            aria-label="Projects menu"
+          >
             Projects
-            <svg class="dropdown-icon" [class.rotate]="isProjectsOpen()" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <svg class="dropdown-icon" [class.rotate]="isProjectsOpen()" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
               <path d="M4.427 6.427a.6.6 0 0 1 .848 0L8 9.151l2.725-2.724a.6.6 0 1 1 .848.848l-3.149 3.15a.6.6 0 0 1-.848 0l-3.15-3.15a.6.6 0 0 1 0-.848Z"/>
             </svg>
           </button>
-          <ul class="dropdown-menu" [class.show]="isProjectsOpen()">
-            <li>
-              <a routerLink="/projects/todo-app" routerLinkActive="active" class="dropdown-link" (click)="closeMenus()">
+          <ul class="dropdown-menu" [class.show]="isProjectsOpen()" role="menu" [attr.aria-hidden]="!isProjectsOpen()">
+            <li role="none">
+              <a
+                routerLink="/projects/todo-app"
+                routerLinkActive="active"
+                class="dropdown-link"
+                (click)="closeMenus()"
+                role="menuitem"
+              >
                 Todo App
               </a>
             </li>
-            <li>
-              <a routerLink="/projects/music-moodboard" routerLinkActive="active" class="dropdown-link" (click)="closeMenus()">
+            <li role="none">
+              <a
+                routerLink="/projects/music-moodboard"
+                routerLinkActive="active"
+                class="dropdown-link"
+                (click)="closeMenus()"
+                role="menuitem"
+              >
                 Music Moodboard
               </a>
             </li>
